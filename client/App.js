@@ -5,9 +5,9 @@ import Routes from './routes/index'
 
 export default function App() {
   const [loaded] = useFonts({
-    'Poppins-regular': require('./assets/Font/Poppins-Regular.ttf'),
-    'Poppins-bold': require('./assets/Font/Poppins-Bold.ttf'),
-    'Poppins-medium': require('./assets/Font/Poppins-Medium.ttf')
+    'Roboto-regular': require('./assets/Font/Roboto-Regular.ttf'),
+    'Roboto-bold': require('./assets/Font/Roboto-Bold.ttf'),
+    'Roboto-medium': require('./assets/Font/Roboto-Medium.ttf')
   })
 
   if (!loaded) {
