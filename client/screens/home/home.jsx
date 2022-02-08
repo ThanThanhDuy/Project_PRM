@@ -3,36 +3,17 @@ import React, { useState, useEffect } from 'react'
 import notification from '../../assets/icons/bell_solid.png'
 
 import userApi from '../../api/user/userApi'
-//icons
-import carousel_line from '../../assets/icons/carousel_line.png'
-import carousel_solid from '../../assets/icons/carousel_solid2.png'
-import grid_line from '../../assets/icons/grid_line.png'
-import grid_solid from '../../assets/icons/grid_solid2.png'
-//components
-import Carousel from '../../components/carousel/carousel'
+import { useRecoilValue } from 'recoil'
+import { userState } from './../../store/user/user'
 export default function home() {
-  const [name, setName] = useState('')
-  const [layoutSelected, setLayoutSelected] = useState(true)
-
-  //get user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await userApi.getUser()
-        setName(response.data.lastName)
-      } catch (error) {
-        console.log('fail: ', error)
-      }
-    }
-    fetchUser()
-  }, [])
+  const user = useRecoilValue(userState)
 
   return (
     <View style={styles.container}>
       {/* header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title1}>Chào, {name}!</Text>
+          <Text style={styles.title1}>Hello, {user.familyName}!</Text>
           <Text style={styles.title2}>Bạn cần cuốn sách nào thế?</Text>
         </View>
         <View>
@@ -60,6 +41,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+
   title1: {
     fontFamily: 'Roboto-bold',
     fontSize: 30

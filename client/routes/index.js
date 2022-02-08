@@ -15,8 +15,16 @@ export default function index() {
         }}
         initialRouteName="NotAuth"
       >
-        <Root.Screen name="NotAuth" component={NotAuth} />
-        <Root.Screen name="Auth" component={Auth} />
+        <Root.Screen
+          name="NotAuth"
+          component={NotAuth}
+          options={{ gestureEnabled: false }}
+        />
+        <Root.Screen
+          name="Auth"
+          component={Auth}
+          options={{ gestureEnabled: false }}
+        />
       </Root.Navigator>
     </NavigationContainer>
   )

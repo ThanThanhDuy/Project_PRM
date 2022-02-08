@@ -2,7 +2,8 @@ import { useFonts } from 'expo-font'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, Text, View } from 'react-native'
 import Routes from './routes/index'
-
+import { RecoilRoot } from 'recoil'
+import { NativeBaseProvider } from 'native-base'
 export default function App() {
   const [loaded] = useFonts({
     'Roboto-regular': require('./assets/Font/Roboto-Regular.ttf'),
@@ -14,10 +15,14 @@ export default function App() {
     return null
   }
   return (
-    <View style={styles.root}>
-      <Routes />
-      <StatusBar barStyle="light-content" />
-    </View>
+    <RecoilRoot>
+      <NativeBaseProvider>
+        <View style={styles.root}>
+          <Routes />
+          <StatusBar barStyle="light-content" />
+        </View>
+      </NativeBaseProvider>
+    </RecoilRoot>
   )
 }
 
