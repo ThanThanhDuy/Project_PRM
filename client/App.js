@@ -2,22 +2,27 @@ import { useFonts } from 'expo-font'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, Text, View } from 'react-native'
 import Routes from './routes/index'
-
+import { RecoilRoot } from 'recoil'
+import { NativeBaseProvider } from 'native-base'
 export default function App() {
   const [loaded] = useFonts({
-    'Poppins-regular': require('./assets/Font/Poppins-Regular.ttf'),
-    'Poppins-bold': require('./assets/Font/Poppins-Bold.ttf'),
-    'Poppins-medium': require('./assets/Font/Poppins-Medium.ttf')
+    'Roboto-regular': require('./assets/Font/Roboto-Regular.ttf'),
+    'Roboto-bold': require('./assets/Font/Roboto-Bold.ttf'),
+    'Roboto-medium': require('./assets/Font/Roboto-Medium.ttf')
   })
 
   if (!loaded) {
     return null
   }
   return (
-    <View style={styles.root}>
-      <Routes />
-      <StatusBar barStyle="light-content" />
-    </View>
+    <RecoilRoot>
+      <NativeBaseProvider>
+        <View style={styles.root}>
+          <Routes />
+          <StatusBar barStyle="light-content" />
+        </View>
+      </NativeBaseProvider>
+    </RecoilRoot>
   )
 }
 
