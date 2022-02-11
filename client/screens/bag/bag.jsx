@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-export default function chat() {
+export default function bag() {
   return (
     <View style={styles.container}>
-      <Text>Chat Screen</Text>
+      <Text>Bag Screen</Text>
     </View>
   )
 }

@@ -11,88 +11,56 @@ import React, { useState, useEffect } from 'react'
 import notification from '../../assets/icons/bell_solid.png'
 import addBag from '../../assets/icons/add.png'
 import userApi from '../../api/user/userApi'
-import { useRecoilValue } from 'recoil'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { userState } from './../../store/user/user'
 import { Link } from 'native-base'
-export default function home() {
+import Header from '../../components/header/header'
+import cateApi from '../../api/category/catetory'
+import bookApi from '../../api/books/book'
+import VARIABLES from '../../constants/index'
+import { cateSelectedState } from '../../store/cate/cate'
+export default function home({ navigation }) {
   const user = useRecoilValue(userState)
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: 'Science - Technology',
-      color: '#aed8af'
-    },
-    {
-      id: 2,
-      name: 'Business - Finance',
-      color: '#dedede'
-    },
-    {
-      id: 3,
-      name: 'Music',
-      color: '#fbd3d3'
-    },
-    {
-      id: 4,
-      name: 'Health',
-      color: '#e2d1fd'
-    },
-    {
-      id: 5,
-      name: 'Lifestyle',
-      color: '#efd6b9'
-    },
-    {
-      id: 6,
-      name: 'Others',
-      color: '#fccc78'
+
+  const [categories, setCategories] = useState([])
+  const [books, setBooks] = useState([])
+
+  const setCateSelect = useSetRecoilState(cateSelectedState)
+  useEffect(() => {
+    const getCate = async () => {
+      // get categories
+      const cate = await cateApi.getCate()
+      const data = cate.map((item, index) => {
+        return {
+          ...item,
+          color: VARIABLES.COLOR_CATE[index]
+        }
+      })
+      setCategories(data)
+      // get books
+      const getBook = async () => {
+        const book = await bookApi.getBook()
+        setBooks(book)
+      }
+      getBook()
     }
-  ])
-  const a = [
-    {
-      key: 1,
-      title: 'Getting Things Done : The Art of Stress-Free Productivity',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/9/7/9780143126560.jpg'
-    },
-    {
-      key: 2,
-      title: 'Blue Ocean Strategy, Expanded Edition',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/i/m/image_181251.jpg'
-    },
-    {
-      key: 3,
-      title: `Help Them Grow Or Watch Them Go`,
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/i/m/image_194977.jpg'
-    },
-    {
-      key: 4,
-      title: 'Kỷ Luật Làm Nên Con Người',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/k/l/kllncn.jpg'
-    },
-    {
-      key: 5,
-      title: 'Phá Vỡ Giới Hạn Để Không Hoài Phí Tuổi Trẻ ',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/p/h/ph_-v_-gi_i-h_n-_-kh_ng-ho_i-ph_-tu_i-tr__b_a-1.jpg'
-    }
-  ]
+    getCate()
+  }, [])
+  // handle category selected
+  const handleCateSelected = async id => {
+    setCateSelect(id)
+    setTimeout(() => {
+      navigation.navigate('Book')
+    }, 400)
+  }
 
   return (
     <View style={styles.container}>
       {/* header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title1}>Hello, {user.familyName}!</Text>
-          <Text style={styles.title2}>What book do you need?</Text>
-        </View>
-        <View>
-          <Image source={notification} />
-        </View>
-      </View>
+      <Header
+        string1={`Hello, ${user.familyName}`}
+        string2={'What book do you need?'}
+      />
       {/* popular categories */}
       <View style={styles.mainCate}>
         <Text style={styles.popularCate}>Popular categories</Text>
@@ -102,7 +70,7 @@ export default function home() {
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.5}
-                onPress={() => console.log(item.id)}
+                onPress={() => handleCateSelected(item.id)}
               >
                 <View
                   style={{
@@ -141,7 +109,7 @@ export default function home() {
           marginRight: 25,
           marginLeft: 25
         }}
-        data={a}
+        data={books}
         renderItem={({ item, index }) => (
           <View
             style={{
@@ -163,7 +131,7 @@ export default function home() {
             <TouchableOpacity
               style={{ height: '100%', width: '100%' }}
               activeOpacity={0.7}
-              onPress={() => console.log(item.key)}
+              onPress={() => console.log('book' + item.id)}
             >
               <Image
                 style={styles.tinyLogo}
@@ -177,7 +145,7 @@ export default function home() {
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 >
-                  {item.title}
+                  {item.name}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -186,7 +154,7 @@ export default function home() {
               onPress={() => console.log('add to cart')}
               style={{
                 position: 'absolute',
-                bottom: -14
+                bottom: -16
               }}
             >
               <Image source={addBag} />
@@ -207,24 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingBottom: 95
   },
-  header: {
-    marginTop: 60,
-    marginLeft: 25,
-    marginRight: 25,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
 
-  title1: {
-    fontFamily: 'Roboto-bold',
-    fontSize: 30
-  },
-  title2: {
-    fontFamily: 'Roboto-regular',
-    fontSize: 14,
-    marginTop: 3
-  },
   mainCate: {
     marginTop: 20,
     marginLeft: 25,
