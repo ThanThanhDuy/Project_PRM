@@ -15,8 +15,8 @@ import home_solid from '../../assets/icons/home_solid.png'
 import home_line from '../../assets/icons/home_line.png'
 import book_solid from '../../assets/icons/book_solid.png'
 import book_line from '../../assets/icons/book_line.png'
-import comment_line from '../../assets/icons/comment_line.png'
-import comment_solid from '../../assets/icons/comment_solid.png'
+import shopping_line from '../../assets/icons/shopping_line.png'
+import shopping_solid from '../../assets/icons/shopping_solid.png'
 import user_line from '../../assets/icons/user_line.png'
 import user_solid from '../../assets/icons/user_solid.png'
 
@@ -44,7 +44,7 @@ export default function auth() {
               return (
                 <Image
                   style={{ width: 24, height: 24 }}
-                  source={focused ? comment_solid : comment_line}
+                  source={focused ? shopping_solid : shopping_line}
                 />
               )
             } else if (route.name === 'User') {
@@ -56,8 +56,6 @@ export default function auth() {
               )
             }
           },
-          tabBarInactiveTintColor: 'gray',
-          tabBarActiveTintColor: 'tomato',
           tabBarLabel: () => {
             return null
           },
@@ -80,9 +78,14 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     marginLeft: 25,
     marginRight: 25,
-    backgroundColor: '#19224C',
+    backgroundColor: '#fff',
     marginBottom: 30,
     borderTopWidth: 0,
-    borderRadius: 15
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 3,
+    position: 'absolute'
   }
 })

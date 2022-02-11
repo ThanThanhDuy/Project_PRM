@@ -1,15 +1,24 @@
 import {
-  Alert,
   StyleSheet,
   Text,
   View,
-  Button,
   Image,
   TouchableOpacity,
   Modal
 } from 'react-native'
 // UI
-import { Spinner, HStack, Heading } from 'native-base'
+import {
+  Alert,
+  VStack,
+  HStack,
+  IconButton,
+  CloseIcon,
+  Center,
+  Spinner,
+  Heading,
+  Stack,
+  Slide
+} from 'native-base'
 // Icon
 import { Ionicons } from '@expo/vector-icons'
 
@@ -29,6 +38,7 @@ export default function login({ navigation }) {
   const setUser = useSetRecoilState(userState)
   const userAccessToken = useSetRecoilState(userAccessTokenState)
   const [modalVisible, setModalVisible] = useState(false)
+  const [tostVisible, setToastVisible] = useState(false)
 
   //handle login
   const handleGoogleSignIn = async () => {
@@ -51,11 +61,10 @@ export default function login({ navigation }) {
             setModalVisible(false)
           }, 1500)
         } else {
-          Alert.alert('Log in Failed', 'Please check again', [
-            {
-              text: 'OK'
-            }
-          ])
+          setToastVisible(true)
+          setTimeout(() => {
+            setToastVisible(false)
+          }, 3000)
         }
       })
       .catch(error => {
@@ -67,6 +76,15 @@ export default function login({ navigation }) {
     <View style={styles.container}>
       <View style={styles.boxLogin}>
         <Image source={logo} style={styles.logo} />
+        <View style={styles.boxNameApp}>
+          <Text style={styles.txtNameApp}>
+            <Text style={{ color: '#fccc78' }}>Library</Text>{' '}
+            <Text style={{ color: '#fccc78' }}>Assistant</Text>
+          </Text>
+          <Text style={styles.txtNameApp}>
+            <Text style={{ color: '#fccc78' }}>Student</Text>
+          </Text>
+        </View>
         <TouchableOpacity opacity={0.9} onPress={handleGoogleSignIn}>
           <View style={styles.button}>
             <Ionicons name="logo-google" size={24} color="#fff" />
@@ -77,6 +95,7 @@ export default function login({ navigation }) {
       <View style={styles.boxVersion}>
         <Text style={styles.textVersion}>Version 0.0.1</Text>
       </View>
+      {/* Modal waiting */}
       <Modal transparent={true} animationType="fade" visible={modalVisible}>
         <View style={styles.modal}>
           <HStack space={2} justifyContent="center" style={styles.boxModal}>
@@ -87,6 +106,33 @@ export default function login({ navigation }) {
           </HStack>
         </View>
       </Modal>
+      {/* tost */}
+      <Slide in={tostVisible} style={{ alignItems: 'center' }}>
+        <Center style={styles.tostBox}>
+          <Stack space={3} w="90%" maxW="400">
+            <Alert w="100%" status="warning">
+              <VStack space={2} flexShrink={1} w="100%">
+                <HStack flexShrink={1} space={2} justifyContent="space-between">
+                  <Center>
+                    <HStack space={2} flexShrink={1}>
+                      <Alert.Icon />
+                      <Text fontSize="md" color="coolGray.800">
+                        Log in Failed!
+                      </Text>
+                    </HStack>
+                  </Center>
+                  <IconButton
+                    onPress={() => setToastVisible(false)}
+                    style={{ marginRight: 8 }}
+                    variant="unstyled"
+                    icon={<CloseIcon size="3" color="coolGray.600" />}
+                  />
+                </HStack>
+              </VStack>
+            </Alert>
+          </Stack>
+        </Center>
+      </Slide>
     </View>
   )
 }
@@ -104,13 +150,14 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 50,
-    backgroundColor: '#19224C',
+    backgroundColor: '#88b484',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
     flexDirection: 'row',
     paddingLeft: 20,
-    paddingRight: 20
+    paddingRight: 20,
+    marginTop: 20
   },
   textLogin: {
     fontFamily: 'Roboto-medium',
@@ -137,5 +184,16 @@ const styles = StyleSheet.create({
   },
   boxModal: {
     top: '50%'
+  },
+  boxNameApp: {
+    alignItems: 'center'
+  },
+  txtNameApp: {
+    fontFamily: 'Roboto-bold',
+    fontSize: 25
+  },
+  tostBox: {
+    position: 'absolute',
+    bottom: 30
   }
 })
