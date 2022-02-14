@@ -12,16 +12,19 @@ import notification from '../../assets/icons/bell_solid.png'
 import addBag from '../../assets/icons/add.png'
 import userApi from '../../api/user/userApi'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
-import { userState } from './../../store/user/user'
+import { userAppState, userGoogleState } from './../../store/user/user'
 import { Link } from 'native-base'
 import Header from '../../components/header/header'
 import cateApi from '../../api/category/catetory'
 import bookApi from '../../api/books/book'
 import VARIABLES from '../../constants/index'
 import { cateSelectedState } from '../../store/cate/cate'
+import axiosCateApi from '../../api/category/axiosCateApi'
+import axiosBookApi from '../../api/books/axiosBookApi'
+import ListBook from '../../components/listBook/listBook'
 export default function home({ navigation }) {
-  const user = useRecoilValue(userState)
-
+  const userGoogle = useRecoilValue(userGoogleState)
+  const userApp = useRecoilValue(userAppState)
   const [categories, setCategories] = useState([])
   const [books, setBooks] = useState([])
 
@@ -29,18 +32,31 @@ export default function home({ navigation }) {
   useEffect(() => {
     const getCate = async () => {
       // get categories
-      const cate = await cateApi.getCate()
-      const data = cate.map((item, index) => {
+      // axios.get(webApiUrl, { headers: {"Authorization" : `Bearer ${tokenStr}`} });
+      const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+      // const cate = await cateApi.getCate()
+      const cateTmp = JSON.parse(responseCate.data)
+      const data = cateTmp.map((item, index) => {
         return {
           ...item,
           color: VARIABLES.COLOR_CATE[index]
         }
       })
-      setCategories(data)
+      setCategories(data && data.length > 6 ? data.slice(0, 6) : data)
       // get books
+      const paramApiBook = {
+        pageSize: 20,
+        pageIndex: 0
+      }
       const getBook = async () => {
-        const book = await bookApi.getBook()
-        setBooks(book)
+        // const book = await bookApi.getBook()
+        // const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+        const book = await axiosBookApi.getBookPopular(
+          userApp.Token,
+          paramApiBook
+        )
+        // console.log(book.data)
+        setBooks(JSON.parse(book.data))
       }
       getBook()
     }
@@ -58,7 +74,7 @@ export default function home({ navigation }) {
     <View style={styles.container}>
       {/* header */}
       <Header
-        string1={`Hello, ${user.familyName}`}
+        string1={`Hello, ${userGoogle.familyName}`}
         string2={'What book do you need?'}
       />
       {/* popular categories */}
@@ -68,9 +84,9 @@ export default function home({ navigation }) {
           {categories.map(item => {
             return (
               <TouchableOpacity
-                key={item.id}
+                key={item.Id}
                 activeOpacity={0.5}
-                onPress={() => handleCateSelected(item.id)}
+                onPress={() => handleCateSelected(item.Id)}
               >
                 <View
                   style={{
@@ -84,7 +100,7 @@ export default function home({ navigation }) {
                     borderRadius: 10
                   }}
                 >
-                  <Text style={styles.textCate}>{item.name}</Text>
+                  <Text style={styles.textCate}>{item.Name}</Text>
                 </View>
               </TouchableOpacity>
             )
@@ -104,11 +120,12 @@ export default function home({ navigation }) {
         </TouchableOpacity>
       </View>
       {/* list book */}
-      <FlatList
+      {/* <FlatList
         contentContainerStyle={{
           marginRight: 25,
           marginLeft: 25
         }}
+        keyExtractor={(item, index) => index.toString()}
         data={books}
         renderItem={({ item, index }) => (
           <View
@@ -127,16 +144,17 @@ export default function home({ navigation }) {
               shadowRadius: 3,
               marginTop: 10
             }}
+            key={item.Id_nfc}
           >
             <TouchableOpacity
               style={{ height: '100%', width: '100%' }}
               activeOpacity={0.7}
-              onPress={() => console.log('book' + item.id)}
+              onPress={() => console.log('book' + item.Id_nfc)}
             >
               <Image
                 style={styles.tinyLogo}
                 source={{
-                  uri: item.image
+                  uri: item.Image
                 }}
               />
               <View style={{ width: '100%', alignItems: 'flex-start' }}>
@@ -145,7 +163,7 @@ export default function home({ navigation }) {
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 >
-                  {item.name}
+                  {item.Name}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -164,7 +182,8 @@ export default function home({ navigation }) {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-      />
+      /> */}
+      <ListBook books={books} />
     </View>
   )
 }

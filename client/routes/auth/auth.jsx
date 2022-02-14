@@ -21,6 +21,7 @@ import user_line from '../../assets/icons/user_line.png'
 import user_solid from '../../assets/icons/user_solid.png'
 
 export default function auth() {
+  
   return (
     <View style={{ flex: 1, position: 'relative' }}>
       <Tab.Navigator

@@ -1,11 +1,16 @@
 import { atom } from 'recoil'
 
-export const userState = atom({
-  key: 'userData',
+export const userGoogleState = atom({
+  key: 'userGoogleData',
   default: {}
 })
 
-export const userAccessTokenState = atom({
-  key: 'userAccessToken',
+export const userAppState = atom({
+  key: 'userAppData',
+  default: {}
+})
+
+export const googleAccessTokenState = atom({
+  key: 'googleAccessToken',
   default: ''
 })

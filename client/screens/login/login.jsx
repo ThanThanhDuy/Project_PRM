@@ -30,13 +30,20 @@ import logo from '../../assets/image/logo_fpt.png'
 // state
 import { useSetRecoilState } from 'recoil'
 // state user data
-import { userAccessTokenState, userState } from '../../store/user/user'
+import {
+  googleAccessTokenState,
+  userGoogleState,
+  userAppState
+} from '../../store/user/user'
 // variables
 import VARIABLES from '../../constants/index'
+import axiosUserApi from '../../api/user/axiosUserApi'
+import axios from 'axios'
 
 export default function login({ navigation }) {
-  const setUser = useSetRecoilState(userState)
-  const userAccessToken = useSetRecoilState(userAccessTokenState)
+  const setGoogleUser = useSetRecoilState(userGoogleState)
+  const setAppUser = useSetRecoilState(userAppState)
+  const setGoogleAccessToken = useSetRecoilState(googleAccessTokenState)
   const [modalVisible, setModalVisible] = useState(false)
   const [tostVisible, setToastVisible] = useState(false)
 
@@ -52,14 +59,32 @@ export default function login({ navigation }) {
       .then(result => {
         const { type, accessToken, user } = result
         if (type === 'success') {
-          setUser(user)
-          userAccessToken(accessToken)
           setModalVisible(true)
-          // change screen to home
-          setTimeout(() => {
-            navigation.navigate('Auth')
-            setModalVisible(false)
-          }, 1500)
+          const param = {
+            em: user.email
+          }
+          const data = axiosUserApi.checkUser(param)
+          data
+            .then(res => {
+              console.log(JSON.parse(res.data))
+              if (res && res.data) {
+                // change screen to home
+                setAppUser(JSON.parse(res.data))
+                setGoogleAccessToken(accessToken)
+                setGoogleUser(user)
+                setTimeout(() => {
+                  navigation.navigate('Auth')
+                  setModalVisible(false)
+                }, 1500)
+              }
+            })
+            .catch(err => {
+              setModalVisible(false)
+              setToastVisible(true)
+              setTimeout(() => {
+                setToastVisible(false)
+              }, 3000)
+            })
         } else {
           setToastVisible(true)
           setTimeout(() => {

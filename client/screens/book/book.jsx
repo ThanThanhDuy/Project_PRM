@@ -18,13 +18,19 @@ import Header from '../../components/header/header'
 import cateApi from '../../api/category/catetory'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { cateSelectedState } from '../../store/cate/cate'
+import { userAppState } from '../../store/user/user'
+import axiosCateApi from '../../api/category/axiosCateApi'
+import axiosBookApi from '../../api/books/axiosBookApi'
+import ListBook from '../../components/listBook/listBook'
 export default function book() {
   const [searchText, setSearchText] = React.useState('')
   const setCateSelect = useSetRecoilState(cateSelectedState)
   const [cate, setCate] = React.useState([])
+  const [books, setBooks] = React.useState([])
   const myTextInput = React.createRef()
   const listCate = React.useRef()
   const cateSelected = useRecoilValue(cateSelectedState)
+  const userApp = useRecoilValue(userAppState)
   const handleWhenClearSearch = () => {
     myTextInput.current.clear()
     setSearchText('')
@@ -32,13 +38,18 @@ export default function book() {
 
   React.useEffect(() => {
     const getCate = async () => {
-      const cate = await cateApi.getCate()
+      // const cate = await cateApi.getCate()
+      const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+      const cate = JSON.parse(responseCate.data)
+
       cate.unshift({
-        id: 0,
-        name: 'All'
+        Id: 0,
+        Name: 'All'
       })
+      console.log(cate)
       setCate(cate)
-      let index = cate.findIndex(item => item.id === cateSelected)
+      let index = cate.findIndex(item => item.Id === cateSelected)
+      console.log('index', index)
       listCate.current.scrollToIndex({
         animated: true,
         index: index,
@@ -46,9 +57,31 @@ export default function book() {
       })
     }
     getCate()
+    // search book by cateId
+    const getBookByCate = async () => {
+      const params = {
+        cateId: cateSelected
+      }
+      const responseBook = await axiosBookApi.getBookByCate(
+        userApp.Token,
+        params
+      )
+      setBooks(JSON.parse(responseBook.data))
+    }
+    getBookByCate()
   }, [cateSelected])
 
-  React.useEffect(() => {}, [cateSelected])
+  const handleSearch = async () => {
+    const params = {
+      keyword: searchText,
+      cateId: cateSelected
+    }
+    const responseBook = await axiosBookApi.getBookBySearch(
+      userApp.Token,
+      params
+    )
+    setBooks(JSON.parse(responseBook.data))
+  }
 
   return (
     <KeyboardAvoidingWrapper>
@@ -58,12 +91,7 @@ export default function book() {
         {/* Search */}
         <View style={styles.searchBar}>
           <View style={styles.boxSearch}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => {
-                console.log(searchText)
-              }}
-            >
+            <TouchableOpacity activeOpacity={0.5} onPress={handleSearch}>
               <Image source={searchIcon} style={{ width: 20, height: 20 }} />
             </TouchableOpacity>
             <TextInput
@@ -71,9 +99,7 @@ export default function book() {
               style={styles.inputTextSearch}
               placeholder="Search"
               onChangeText={text => setSearchText(text)}
-              onSubmitEditing={() => {
-                console.log(searchText)
-              }}
+              onSubmitEditing={handleSearch}
             />
             {searchText.length > 0 && (
               <TouchableOpacity
@@ -93,27 +119,30 @@ export default function book() {
           showsHorizontalScrollIndicator={false}
           data={cate}
           ref={listCate}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <TouchableOpacity
-              key={item.id}
+              key={item.Id}
               activeOpacity={0.5}
-              onPress={() => setCateSelect(item.id)}
+              onPress={() => setCateSelect(item.Id)}
               style={{ marginRight: 20 }}
             >
               <View>
                 <Text
                   style={
-                    item.id === cateSelected
+                    item.Id === cateSelected
                       ? styles.textCateSelected
                       : styles.textCate
                   }
                 >
-                  {item.name}
+                  {item.Name}
                 </Text>
               </View>
             </TouchableOpacity>
           )}
         ></FlatList>
+        {/* show book */}
+        <ListBook books={books} />
       </View>
     </KeyboardAvoidingWrapper>
   )
@@ -122,8 +151,8 @@ export default function book() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingBottom: 95
+    backgroundColor: '#fff'
+    // paddingBottom: 95
   },
   searchBar: {
     marginLeft: 25,
@@ -166,6 +195,8 @@ const styles = StyleSheet.create({
     marginLeft: 25,
     marginRight: 25,
     marginTop: 15,
-    flexDirection: 'row'
+    flexDirection: 'row',
+    flexShrink: 0,
+    flexGrow: 0
   }
 })
