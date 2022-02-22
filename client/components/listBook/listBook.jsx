@@ -9,7 +9,12 @@ import {
 import React from 'react'
 import addBag from '../../assets/icons/add.png'
 export default function (props) {
-  const { books } = props
+  const { books, handleAddBook } = props
+
+  const handleAddBookToBag = book => {
+    handleAddBook(book)
+  }
+
   return (
     <FlatList
       contentContainerStyle={{
@@ -40,7 +45,6 @@ export default function (props) {
           <TouchableOpacity
             style={{ height: '100%', width: '100%' }}
             activeOpacity={0.7}
-            onPress={() => console.log('book' + item.Id_nfc)}
           >
             <Image
               style={styles.tinyLogo}
@@ -60,7 +64,7 @@ export default function (props) {
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => console.log('add to cart')}
+            onPress={() => handleAddBookToBag(item)}
             style={{
               position: 'absolute',
               bottom: -16

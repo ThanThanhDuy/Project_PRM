@@ -12,7 +12,7 @@ const Root = createNativeStackNavigator()
 export default function index() {
   const MyTheme = {
     colors: {
-      background: 'red'
+      background: '#fff'
     }
   }
   return (

@@ -68,19 +68,24 @@ export default function login({ navigation }) {
             .then(res => {
               console.log(JSON.parse(res.data))
               if (res && res.data) {
-                // change screen to home
-                setAppUser(JSON.parse(res.data))
-                setGoogleAccessToken(accessToken)
-                setGoogleUser(user)
-                setTimeout(() => {
-                  navigation.navigate('Auth')
-                  setModalVisible(false)
-                }, 1500)
+                if (JSON.parse(res.data).Role_id === 'ST') {
+                  // change screen to home
+                  setAppUser(JSON.parse(res.data))
+                  setGoogleAccessToken(accessToken)
+                  setGoogleUser(user)
+                  setTimeout(() => {
+                    navigation.navigate('Auth')
+                    setModalVisible(false)
+                  }, 1500)
+                } else {
+                  throw new Error('You are not student')
+                }
               }
             })
             .catch(err => {
               setModalVisible(false)
               setToastVisible(true)
+              console.log(err)
               setTimeout(() => {
                 setToastVisible(false)
               }, 3000)
