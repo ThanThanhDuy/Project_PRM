@@ -1,14 +1,22 @@
 import { StyleSheet } from 'react-native'
 import React from 'react'
 import { NavigationContainer } from '@react-navigation/native'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import {
+  createNativeStackNavigator,
+  DefaultTheme
+} from '@react-navigation/native-stack'
 import Auth from './auth/auth'
 import NotAuth from './notAuth/notAuth'
 const Root = createNativeStackNavigator()
 
 export default function index() {
+  const MyTheme = {
+    colors: {
+      background: 'red'
+    }
+  }
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
       <Root.Navigator
         screenOptions={{
           headerShown: false

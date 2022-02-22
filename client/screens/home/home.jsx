@@ -11,88 +11,72 @@ import React, { useState, useEffect } from 'react'
 import notification from '../../assets/icons/bell_solid.png'
 import addBag from '../../assets/icons/add.png'
 import userApi from '../../api/user/userApi'
-import { useRecoilValue } from 'recoil'
-import { userState } from './../../store/user/user'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
+import { userAppState, userGoogleState } from './../../store/user/user'
 import { Link } from 'native-base'
-export default function home() {
-  const user = useRecoilValue(userState)
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: 'Science - Technology',
-      color: '#aed8af'
-    },
-    {
-      id: 2,
-      name: 'Business - Finance',
-      color: '#dedede'
-    },
-    {
-      id: 3,
-      name: 'Music',
-      color: '#fbd3d3'
-    },
-    {
-      id: 4,
-      name: 'Health',
-      color: '#e2d1fd'
-    },
-    {
-      id: 5,
-      name: 'Lifestyle',
-      color: '#efd6b9'
-    },
-    {
-      id: 6,
-      name: 'Others',
-      color: '#fccc78'
+import Header from '../../components/header/header'
+import cateApi from '../../api/category/catetory'
+import bookApi from '../../api/books/book'
+import VARIABLES from '../../constants/index'
+import { cateSelectedState } from '../../store/cate/cate'
+import axiosCateApi from '../../api/category/axiosCateApi'
+import axiosBookApi from '../../api/books/axiosBookApi'
+import ListBook from '../../components/listBook/listBook'
+export default function home({ navigation }) {
+  const userGoogle = useRecoilValue(userGoogleState)
+  const userApp = useRecoilValue(userAppState)
+  const [categories, setCategories] = useState([])
+  const [books, setBooks] = useState([])
+
+  const setCateSelect = useSetRecoilState(cateSelectedState)
+  useEffect(() => {
+    const getCate = async () => {
+      // get categories
+      // axios.get(webApiUrl, { headers: {"Authorization" : `Bearer ${tokenStr}`} });
+      const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+      // const cate = await cateApi.getCate()
+      const cateTmp = JSON.parse(responseCate.data)
+      const data = cateTmp.map((item, index) => {
+        return {
+          ...item,
+          color: VARIABLES.COLOR_CATE[index]
+        }
+      })
+      setCategories(data && data.length > 6 ? data.slice(0, 6) : data)
+      // get books
+      const paramApiBook = {
+        pageSize: 20,
+        pageIndex: 0
+      }
+      const getBook = async () => {
+        // const book = await bookApi.getBook()
+        // const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+        const book = await axiosBookApi.getBookPopular(
+          userApp.Token,
+          paramApiBook
+        )
+        // console.log(book.data)
+        setBooks(JSON.parse(book.data))
+      }
+      getBook()
     }
-  ])
-  const a = [
-    {
-      key: 1,
-      title: 'Getting Things Done : The Art of Stress-Free Productivity',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/9/7/9780143126560.jpg'
-    },
-    {
-      key: 2,
-      title: 'Blue Ocean Strategy, Expanded Edition',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/i/m/image_181251.jpg'
-    },
-    {
-      key: 3,
-      title: `Help Them Grow Or Watch Them Go`,
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/i/m/image_194977.jpg'
-    },
-    {
-      key: 4,
-      title: 'Kỷ Luật Làm Nên Con Người',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/k/l/kllncn.jpg'
-    },
-    {
-      key: 5,
-      title: 'Phá Vỡ Giới Hạn Để Không Hoài Phí Tuổi Trẻ ',
-      image:
-        'https://cdn0.fahasa.com/media/catalog/product/cache/1/small_image/600x600/9df78eab33525d08d6e5fb8d27136e95/p/h/ph_-v_-gi_i-h_n-_-kh_ng-ho_i-ph_-tu_i-tr__b_a-1.jpg'
-    }
-  ]
+    getCate()
+  }, [])
+  // handle category selected
+  const handleCateSelected = async id => {
+    setCateSelect(id)
+    setTimeout(() => {
+      navigation.navigate('Book')
+    }, 400)
+  }
 
   return (
     <View style={styles.container}>
       {/* header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title1}>Hello, {user.familyName}!</Text>
-          <Text style={styles.title2}>What book do you need?</Text>
-        </View>
-        <View>
-          <Image source={notification} />
-        </View>
-      </View>
+      <Header
+        string1={`Hello, ${userGoogle.familyName}`}
+        string2={'What book do you need?'}
+      />
       {/* popular categories */}
       <View style={styles.mainCate}>
         <Text style={styles.popularCate}>Popular categories</Text>
@@ -100,9 +84,9 @@ export default function home() {
           {categories.map(item => {
             return (
               <TouchableOpacity
-                key={item.id}
+                key={item.Id}
                 activeOpacity={0.5}
-                onPress={() => console.log(item.id)}
+                onPress={() => handleCateSelected(item.Id)}
               >
                 <View
                   style={{
@@ -116,7 +100,7 @@ export default function home() {
                     borderRadius: 10
                   }}
                 >
-                  <Text style={styles.textCate}>{item.name}</Text>
+                  <Text style={styles.textCate}>{item.Name}</Text>
                 </View>
               </TouchableOpacity>
             )
@@ -136,12 +120,13 @@ export default function home() {
         </TouchableOpacity>
       </View>
       {/* list book */}
-      <FlatList
+      {/* <FlatList
         contentContainerStyle={{
           marginRight: 25,
           marginLeft: 25
         }}
-        data={a}
+        keyExtractor={(item, index) => index.toString()}
+        data={books}
         renderItem={({ item, index }) => (
           <View
             style={{
@@ -159,16 +144,17 @@ export default function home() {
               shadowRadius: 3,
               marginTop: 10
             }}
+            key={item.Id_nfc}
           >
             <TouchableOpacity
               style={{ height: '100%', width: '100%' }}
               activeOpacity={0.7}
-              onPress={() => console.log(item.key)}
+              onPress={() => console.log('book' + item.Id_nfc)}
             >
               <Image
                 style={styles.tinyLogo}
                 source={{
-                  uri: item.image
+                  uri: item.Image
                 }}
               />
               <View style={{ width: '100%', alignItems: 'flex-start' }}>
@@ -177,7 +163,7 @@ export default function home() {
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 >
-                  {item.title}
+                  {item.Name}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -186,7 +172,7 @@ export default function home() {
               onPress={() => console.log('add to cart')}
               style={{
                 position: 'absolute',
-                bottom: -14
+                bottom: -16
               }}
             >
               <Image source={addBag} />
@@ -196,7 +182,8 @@ export default function home() {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-      />
+      /> */}
+      <ListBook books={books} />
     </View>
   )
 }
@@ -207,24 +194,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingBottom: 95
   },
-  header: {
-    marginTop: 60,
-    marginLeft: 25,
-    marginRight: 25,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
 
-  title1: {
-    fontFamily: 'Roboto-bold',
-    fontSize: 30
-  },
-  title2: {
-    fontFamily: 'Roboto-regular',
-    fontSize: 14,
-    marginTop: 3
-  },
   mainCate: {
     marginTop: 20,
     marginLeft: 25,

@@ -3,21 +3,21 @@ import React, { useState } from 'react'
 import * as Google from 'expo-google-app-auth'
 import VARIABLES from '../../constants/index'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
-import { userAccessTokenState, userState } from '../../store/user/user'
+import { googleAccessTokenState, userGoogleState } from '../../store/user/user'
 // UI
 import { Spinner, HStack, Heading } from 'native-base'
 
 export default function user({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false)
-  const setUser = useSetRecoilState(userState)
-  const userAccessToken = useSetRecoilState(userAccessTokenState)
+  const setUserGoogle = useSetRecoilState(userGoogleState)
+  const userAccessToken = useSetRecoilState(googleAccessTokenState)
 
   const config = {
     androidClientId: VARIABLES.ANDROIDCLIENTID,
     iosClientId: VARIABLES.IOSCLIENTID,
     scopes: ['profile', 'email']
   }
-  const accessToken = useRecoilValue(userAccessTokenState)
+  const accessToken = useRecoilValue(googleAccessTokenState)
   const logOut = async () => {
     Google.logOutAsync({ accessToken, ...config }).then(() => {
       setModalVisible(true)

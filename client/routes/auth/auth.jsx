@@ -7,7 +7,7 @@ const Tab = createBottomTabNavigator()
 //Screen
 import Home from '../../screens/home/home'
 import Book from '../../screens/book/book'
-import Chat from '../../screens/chat/chat'
+import Bag from '../../screens/bag/bag'
 import User from '../../screens/user/user'
 
 //icons
@@ -21,6 +21,7 @@ import user_line from '../../assets/icons/user_line.png'
 import user_solid from '../../assets/icons/user_solid.png'
 
 export default function auth() {
+  
   return (
     <View style={{ flex: 1, position: 'relative' }}>
       <Tab.Navigator
@@ -40,7 +41,7 @@ export default function auth() {
                   source={focused ? book_solid : book_line}
                 />
               )
-            } else if (route.name === 'Chat') {
+            } else if (route.name === 'Bag') {
               return (
                 <Image
                   style={{ width: 24, height: 24 }}
@@ -65,7 +66,7 @@ export default function auth() {
       >
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Book" component={Book} />
-        <Tab.Screen name="Chat" component={Chat} />
+        <Tab.Screen name="Bag" component={Bag} />
         <Tab.Screen name="User" component={User} />
       </Tab.Navigator>
     </View>
@@ -76,8 +77,8 @@ const styles = StyleSheet.create({
   tab: {
     height: 65,
     paddingBottom: 0,
-    marginLeft: 25,
-    marginRight: 25,
+    marginLeft: 15,
+    marginRight: 15,
     backgroundColor: '#fff',
     marginBottom: 30,
     borderTopWidth: 0,
