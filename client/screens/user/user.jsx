@@ -21,7 +21,7 @@ export default function user({ navigation }) {
   const logOut = async () => {
     Google.logOutAsync({ accessToken, ...config }).then(() => {
       setModalVisible(true)
-      setUser({})
+      setUserGoogle({})
       userAccessToken(null)
       setTimeout(() => {
         navigation.navigate('NotAuth')

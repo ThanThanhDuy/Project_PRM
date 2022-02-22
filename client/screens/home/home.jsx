@@ -22,11 +22,14 @@ import { cateSelectedState } from '../../store/cate/cate'
 import axiosCateApi from '../../api/category/axiosCateApi'
 import axiosBookApi from '../../api/books/axiosBookApi'
 import ListBook from '../../components/listBook/listBook'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { bookSelectToAddState } from '../../store/book/book'
 export default function home({ navigation }) {
   const userGoogle = useRecoilValue(userGoogleState)
   const userApp = useRecoilValue(userAppState)
   const [categories, setCategories] = useState([])
   const [books, setBooks] = useState([])
+  const setBookSelectToAddState = useSetRecoilState(bookSelectToAddState)
 
   const setCateSelect = useSetRecoilState(cateSelectedState)
   useEffect(() => {
@@ -44,23 +47,23 @@ export default function home({ navigation }) {
       })
       setCategories(data && data.length > 6 ? data.slice(0, 6) : data)
       // get books
-      const paramApiBook = {
-        pageSize: 20,
-        pageIndex: 0
-      }
-      const getBook = async () => {
-        // const book = await bookApi.getBook()
-        // const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
-        const book = await axiosBookApi.getBookPopular(
-          userApp.Token,
-          paramApiBook
-        )
-        // console.log(book.data)
-        setBooks(JSON.parse(book.data))
-      }
-      getBook()
     }
     getCate()
+    const paramApiBook = {
+      pageSize: 20,
+      pageIndex: 0
+    }
+    const getBook = async () => {
+      // const book = await bookApi.getBook()
+      // const responseCate = await axiosCateApi.getCatePopular(userApp.Token)
+      const book = await axiosBookApi.getBookPopular(
+        userApp.Token,
+        paramApiBook
+      )
+      // console.log(book.data)
+      setBooks(JSON.parse(book.data))
+    }
+    getBook()
   }, [])
   // handle category selected
   const handleCateSelected = async id => {
@@ -68,6 +71,31 @@ export default function home({ navigation }) {
     setTimeout(() => {
       navigation.navigate('Book')
     }, 400)
+  }
+
+  const handleAddBook = async book => {
+    try {
+      // clear
+      // await AsyncStorage.clear()
+      const jsonValue = await AsyncStorage.getItem('@myBag')
+      let myBag = []
+      // check in myBag have any book or not
+      if (jsonValue) {
+        myBag = JSON.parse(jsonValue)
+        myBag.push(book)
+        setBookSelectToAddState(myBag)
+      } else {
+        myBag.push(book)
+        setBookSelectToAddState(myBag)
+      }
+      const json = JSON.stringify(myBag)
+      await AsyncStorage.setItem('@myBag', json)
+      // log temp
+      const jsonValue2 = await AsyncStorage.getItem('@myBag')
+      console.log(JSON.parse(jsonValue2))
+    } catch (e) {
+      console.log('save local error')
+    }
   }
 
   return (
@@ -120,70 +148,7 @@ export default function home({ navigation }) {
         </TouchableOpacity>
       </View>
       {/* list book */}
-      {/* <FlatList
-        contentContainerStyle={{
-          marginRight: 25,
-          marginLeft: 25
-        }}
-        keyExtractor={(item, index) => index.toString()}
-        data={books}
-        renderItem={({ item, index }) => (
-          <View
-            style={{
-              width: '47%',
-              height: 250,
-              borderRadius: 10,
-              marginBottom: '7%',
-              marginRight: index % 2 === 0 ? '3%' : '0%',
-              marginLeft: index % 2 !== 0 ? '3%' : '0%',
-              backgroundColor: '#fff',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.2,
-              shadowRadius: 3,
-              marginTop: 10
-            }}
-            key={item.Id_nfc}
-          >
-            <TouchableOpacity
-              style={{ height: '100%', width: '100%' }}
-              activeOpacity={0.7}
-              onPress={() => console.log('book' + item.Id_nfc)}
-            >
-              <Image
-                style={styles.tinyLogo}
-                source={{
-                  uri: item.Image
-                }}
-              />
-              <View style={{ width: '100%', alignItems: 'flex-start' }}>
-                <Text
-                  style={styles.textTitleBook}
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {item.Name}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => console.log('add to cart')}
-              style={{
-                position: 'absolute',
-                bottom: -16
-              }}
-            >
-              <Image source={addBag} />
-            </TouchableOpacity>
-          </View>
-        )}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-      /> */}
-      <ListBook books={books} />
+      <ListBook books={books} handleAddBook={handleAddBook} />
     </View>
   )
 }

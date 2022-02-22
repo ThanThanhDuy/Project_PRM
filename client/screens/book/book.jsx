@@ -22,6 +22,8 @@ import { userAppState } from '../../store/user/user'
 import axiosCateApi from '../../api/category/axiosCateApi'
 import axiosBookApi from '../../api/books/axiosBookApi'
 import ListBook from '../../components/listBook/listBook'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { bookSelectToAddState } from '../../store/book/book'
 export default function book() {
   const [searchText, setSearchText] = React.useState('')
   const setCateSelect = useSetRecoilState(cateSelectedState)
@@ -31,6 +33,7 @@ export default function book() {
   const listCate = React.useRef()
   const cateSelected = useRecoilValue(cateSelectedState)
   const userApp = useRecoilValue(userAppState)
+  const setBookSelectToAddState = useSetRecoilState(bookSelectToAddState)
   const handleWhenClearSearch = () => {
     myTextInput.current.clear()
     setSearchText('')
@@ -46,15 +49,17 @@ export default function book() {
         Id: 0,
         Name: 'All'
       })
-      console.log(cate)
+
       setCate(cate)
-      let index = cate.findIndex(item => item.Id === cateSelected)
-      console.log('index', index)
-      listCate.current.scrollToIndex({
-        animated: true,
-        index: index,
-        viewPosition: 0.5
-      })
+      if (cate) {
+        let index = cate.findIndex(item => item.Id === cateSelected)
+        console.log('index', index)
+        listCate.current.scrollToIndex({
+          animated: true,
+          index: index,
+          viewPosition: 0.5
+        })
+      }
     }
     getCate()
     // search book by cateId
@@ -81,6 +86,36 @@ export default function book() {
       params
     )
     setBooks(JSON.parse(responseBook.data))
+  }
+
+  const handleAddBook = async book => {
+    try {
+      // clear
+      // await AsyncStorage.clear()
+      const jsonValue = await AsyncStorage.getItem('@myBag')
+      let myBag = []
+      // check in myBag have any book or not
+      if (jsonValue) {
+        myBag = JSON.parse(jsonValue)
+        myBag.push(book)
+        setBookSelectToAddState(myBag)
+      } else {
+        myBag.push(book)
+        setBookSelectToAddState(myBag)
+      }
+      const json = JSON.stringify(myBag)
+      await AsyncStorage.setItem('@myBag', json)
+      // log temp
+      const jsonValue2 = await AsyncStorage.getItem('@myBag')
+      console.log(JSON.parse(jsonValue2))
+    } catch (e) {
+      console.log('save local error')
+    }
+  }
+
+  const handleSelectCate = cateId => {
+    setCateSelect(cateId)
+    handleWhenClearSearch()
   }
 
   return (
@@ -124,7 +159,7 @@ export default function book() {
             <TouchableOpacity
               key={item.Id}
               activeOpacity={0.5}
-              onPress={() => setCateSelect(item.Id)}
+              onPress={() => handleSelectCate(item.Id)}
               style={{ marginRight: 20 }}
             >
               <View>
@@ -142,7 +177,7 @@ export default function book() {
           )}
         ></FlatList>
         {/* show book */}
-        <ListBook books={books} />
+        <ListBook books={books} handleAddBook={handleAddBook} />
       </View>
     </KeyboardAvoidingWrapper>
   )
@@ -151,8 +186,8 @@ export default function book() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
-    // paddingBottom: 95
+    backgroundColor: '#fff',
+    marginBottom: 95
   },
   searchBar: {
     marginLeft: 25,
