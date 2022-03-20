@@ -29,6 +29,7 @@ export default function home({ navigation }) {
   const userApp = useRecoilValue(userAppState)
   const [categories, setCategories] = useState([])
   const [books, setBooks] = useState([])
+  const [tostVisible, setToastVisible] = useState(false)
   const setBookSelectToAddState = useSetRecoilState(bookSelectToAddState)
 
   const setCateSelect = useSetRecoilState(cateSelectedState)
@@ -92,7 +93,7 @@ export default function home({ navigation }) {
       await AsyncStorage.setItem('@myBag', json)
       // log temp
       const jsonValue2 = await AsyncStorage.getItem('@myBag')
-      console.log(JSON.parse(jsonValue2))
+      // console.log(JSON.parse(jsonValue2))
     } catch (e) {
       console.log('save local error')
     }

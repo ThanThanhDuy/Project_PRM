@@ -8,7 +8,7 @@ const Tab = createBottomTabNavigator()
 import Home from '../../screens/home/home'
 import Book from '../../screens/book/book'
 import Bag from '../../screens/bag/bag'
-import User from '../../screens/user/user'
+import User from './user/user'
 
 //icons
 import home_solid from '../../assets/icons/home_solid.png'
@@ -19,9 +19,12 @@ import shopping_line from '../../assets/icons/shopping_line.png'
 import shopping_solid from '../../assets/icons/shopping_solid.png'
 import user_line from '../../assets/icons/user_line.png'
 import user_solid from '../../assets/icons/user_solid.png'
+import chat from './../../screens/chat/chat'
+import { borrowStatusState } from '../../store/bag/bag'
+import { useRecoilState } from 'recoil'
 
 export default function auth() {
-  
+  const [borrowStatus, setBorrowStatus] = useRecoilState(borrowStatusState)
   return (
     <View style={{ flex: 1, position: 'relative' }}>
       <Tab.Navigator
@@ -64,10 +67,50 @@ export default function auth() {
           headerShown: false
         })}
       >
-        <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Book" component={Book} />
-        <Tab.Screen name="Bag" component={Bag} />
-        <Tab.Screen name="User" component={User} />
+        <Tab.Screen
+          name="Home"
+          component={Home}
+          listeners={{
+            tabPress: e => {
+              // Prevent default action
+
+              setBorrowStatus(false)
+            }
+          }}
+        />
+        <Tab.Screen
+          name="Book"
+          component={Book}
+          listeners={{
+            tabPress: e => {
+              // Prevent default action
+
+              setBorrowStatus(false)
+            }
+          }}
+        />
+        <Tab.Screen
+          name="Bag"
+          component={Bag}
+          listeners={{
+            tabPress: e => {
+              // Prevent default action
+
+              setBorrowStatus(false)
+            }
+          }}
+        />
+        <Tab.Screen
+          name="User"
+          component={User}
+          listeners={{
+            tabPress: e => {
+              // Prevent default action
+
+              setBorrowStatus(false)
+            }
+          }}
+        />
       </Tab.Navigator>
     </View>
   )

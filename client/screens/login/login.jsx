@@ -171,7 +171,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginBottom: 95
   },
   logo: {
     width: 220,
