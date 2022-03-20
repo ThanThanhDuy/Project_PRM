@@ -13,17 +13,22 @@ import Header from '../../components/header/header'
 import trash from '../../assets/icons/trash.png'
 import axiosBookApi from '../../api/books/axiosBookApi'
 import { userAppState } from '../../store/user/user'
-import { useRecoilValue, useSetRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import calendar from '../../assets/icons/calendar.png'
 import calendar1 from '../../assets/icons/calendar_1.png'
 import arrow_right from '../../assets/icons/arrow-right.png'
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { bookSelectToAddState } from '../../store/book/book'
+import { AntDesign } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
+import { borrowStatusState } from '../../store/bag/bag'
+import uuid from 'react-native-uuid'
 export default function bag({ navigation }) {
   const [books, setBooks] = React.useState([])
   let bookSelectToAdd = useRecoilValue(bookSelectToAddState)
   const setBookSelectToAddState = useSetRecoilState(bookSelectToAddState)
+  const [borrowStatus, setBorrowStatus] = useRecoilState(borrowStatusState)
   const [dateBorrow, setDateBorrow] = React.useState(
     moment(new Date()).format('YYYY-MM-DD')
   )
@@ -54,11 +59,13 @@ export default function bag({ navigation }) {
     console.log(id_nfc)
     const jsonValue = await AsyncStorage.getItem('@myBag')
     let myBag = JSON.parse(jsonValue)
-    myBag.forEach(item => {
-      if (item.Id_nfc === id_nfc) {
-        myBag.splice(myBag.indexOf(item), 1)
-      }
-    })
+    if (myBag && myBag.length > 0) {
+      myBag.forEach(item => {
+        if (item.Id_nfc === id_nfc) {
+          myBag.splice(myBag.indexOf(item), 1)
+        }
+      })
+    }
     const json = JSON.stringify(myBag)
     await AsyncStorage.setItem('@myBag', json)
     let bookSelectToAddTmp = [...bookSelectToAdd]
@@ -70,70 +77,139 @@ export default function bag({ navigation }) {
     setBookSelectToAddState(bookSelectToAddTmp)
   }
 
+  // handle borrow book
+  const handleBorrowBook = async () => {
+    const jsonValue = await AsyncStorage.getItem('@myBag')
+    let myBag = JSON.parse(jsonValue)
+    // handle add to history local
+    let rentalOrder = {}
+    const jsonHistory = await AsyncStorage.getItem('@testHis2')
+    let history = []
+    if (jsonHistory) {
+      rentalOrder = {
+        idBag: uuid.v4(),
+        idUser: userApp.Id,
+        dateBorrow,
+        dateReturn,
+        time: moment(new Date()).format('HH:mm:ss'),
+        bag: myBag
+      }
+      history = JSON.parse(jsonHistory)
+      history.push(rentalOrder)
+      const json = JSON.stringify(history)
+      await AsyncStorage.setItem('@testHis2', json)
+      await AsyncStorage.setItem('@myBag', '')
+      setBookSelectToAddState([])
+      setBorrowStatus(true)
+      console.log('add to history')
+      // console.log(myBag)
+    } else {
+      rentalOrder = {
+        idBag: uuid.v4(),
+        idUser: userApp.Id,
+        dateBorrow,
+        dateReturn,
+        time: moment(new Date()).format('HH:mm:ss'),
+        bag: myBag
+      }
+      history.push(rentalOrder)
+      const json = JSON.stringify(history)
+      await AsyncStorage.setItem('@testHis2', json)
+      await AsyncStorage.setItem('@myBag', '')
+      setBookSelectToAddState([])
+      console.log('add to history')
+      setBorrowStatus(true)
+      // console.log(myBag)
+    }
+  }
   return (
     <View style={styles.container}>
       {/* header */}
       <Header string1="My Bag" string2="All book in here" />
       {/* my bag */}
-      <FlatList
-        style={{
-          marginLeft: 15,
-          marginRight: 15,
-          padding: 10,
-          marginTop: 10,
-          Bottom: 20
-        }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        data={books}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => (
-          <View style={styles.card}>
-            <View style={{ marginRight: 10 }}>
-              <Image
-                style={{ width: 100, height: 100 }}
-                source={{
-                  uri: item.Image
-                }}
-              />
-            </View>
-            <View style={{ width: '60%' }}>
-              <Text
-                style={styles.titleCard}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {item.Name}
-              </Text>
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={styles.txtAuthor}
-              >
-                {item.Author}
-              </Text>
-            </View>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleRemoveBook(item.Id_nfc)}
-              style={{
-                position: 'absolute',
-                bottom: 15,
-                right: 15
-              }}
-            >
-              <Image
-                style={{
-                  width: 20,
-                  height: 20
-                }}
-                source={trash}
-              />
-            </TouchableOpacity>
+      {!books ||
+        (books.length === 0 && !borrowStatus && (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <Ionicons name="information-circle" size={32} color="#f2b7af" />
+            <Text style={{ fontSize: 20, fontFamily: 'Roboto-medium' }}>
+              Empty Bag
+            </Text>
           </View>
-        )}
-      />
+        ))}
+      {!books ||
+        (books.length === 0 && borrowStatus && (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <AntDesign name="checkcircle" size={32} color="#88b484" />
+            <Text style={{ fontSize: 20, fontFamily: 'Roboto-medium' }}>
+              Borrow Successfully
+            </Text>
+          </View>
+        ))}
+      {books && books.length > 0 && (
+        <FlatList
+          style={{
+            marginLeft: 15,
+            marginRight: 15,
+            padding: 10,
+            marginTop: 10,
+            Bottom: 20
+          }}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          data={books}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item, index }) => (
+            <View style={styles.card}>
+              <View style={{ marginRight: 10 }}>
+                <Image
+                  style={{ width: 100, height: 100 }}
+                  source={{
+                    uri: item.Image
+                  }}
+                />
+              </View>
+              <View style={{ width: '60%' }}>
+                <Text
+                  style={styles.titleCard}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.Name}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={styles.txtAuthor}
+                >
+                  {item.Author}
+                </Text>
+              </View>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => handleRemoveBook(item.Id_nfc)}
+                style={{
+                  position: 'absolute',
+                  bottom: 15,
+                  right: 15
+                }}
+              >
+                <Image
+                  style={{
+                    width: 20,
+                    height: 20
+                  }}
+                  source={trash}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
       {books && books.length > 0 && (
         <View
           style={{
@@ -190,7 +266,7 @@ export default function bag({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity activeOpacity={0.7} onPress={handleBorrowBook}>
               <View style={styles.btnBorrow}>
                 <Text style={{ color: '#fff', fontFamily: 'Roboto-medium' }}>
                   Borrow

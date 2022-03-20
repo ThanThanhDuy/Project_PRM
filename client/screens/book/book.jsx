@@ -8,6 +8,16 @@ import {
   ScrollView,
   FlatList
 } from 'react-native'
+import {
+  Alert,
+  VStack,
+  HStack,
+  IconButton,
+  CloseIcon,
+  Center,
+  Stack,
+  Slide
+} from 'native-base'
 import { Ionicons } from '@expo/vector-icons'
 import KeyboardAvoidingWrapper from '../../components/keyboardAvoid/keyboardAvoidingWapper'
 import { Input } from 'native-base'
@@ -34,6 +44,9 @@ export default function book() {
   const cateSelected = useRecoilValue(cateSelectedState)
   const userApp = useRecoilValue(userAppState)
   const setBookSelectToAddState = useSetRecoilState(bookSelectToAddState)
+  const [tostVisible, setToastVisible] = React.useState(false)
+  const [statusToast, setStatusToast] = React.useState('warning')
+  const [toastMessage, setToastMessage] = React.useState('')
   const handleWhenClearSearch = () => {
     myTextInput.current.clear()
     setSearchText('')
@@ -97,17 +110,44 @@ export default function book() {
       // check in myBag have any book or not
       if (jsonValue) {
         myBag = JSON.parse(jsonValue)
-        myBag.push(book)
-        setBookSelectToAddState(myBag)
+        if (
+          myBag.length < 5 &&
+          myBag.findIndex(item => item.Id_nfc === book.Id_nfc) === -1
+        ) {
+          console.log('ok')
+          myBag.push(book)
+          setBookSelectToAddState(myBag)
+          setToastMessage('Add to bag success')
+          setStatusToast('success')
+          setToastVisible(true)
+          setTimeout(() => {
+            setToastVisible(false)
+          }, 1000)
+        } else {
+          console.log('not ok')
+          setToastMessage('Add to bag fail')
+          setStatusToast('warning')
+          setToastVisible(true)
+          setTimeout(() => {
+            setToastVisible(false)
+          }, 1000)
+        }
       } else {
+        console.log('ok')
         myBag.push(book)
         setBookSelectToAddState(myBag)
+        setToastMessage('Add to bag success')
+        setStatusToast('success')
+        setToastVisible(true)
+        setTimeout(() => {
+          setToastVisible(false)
+        }, 1000)
       }
       const json = JSON.stringify(myBag)
       await AsyncStorage.setItem('@myBag', json)
       // log temp
       const jsonValue2 = await AsyncStorage.getItem('@myBag')
-      console.log(JSON.parse(jsonValue2))
+      // console.log(JSON.parse(jsonValue2))
     } catch (e) {
       console.log('save local error')
     }
@@ -178,6 +218,37 @@ export default function book() {
         ></FlatList>
         {/* show book */}
         <ListBook books={books} handleAddBook={handleAddBook} />
+        {/* toast */}
+        <Slide in={tostVisible} style={{ alignItems: 'center' }}>
+          <Center style={styles.tostBox}>
+            <Stack space={3} w="90%" maxW="400">
+              <Alert w="100%" status={statusToast}>
+                <VStack space={2} flexShrink={1} w="100%">
+                  <HStack
+                    flexShrink={1}
+                    space={2}
+                    justifyContent="space-between"
+                  >
+                    <Center>
+                      <HStack space={2} flexShrink={1}>
+                        <Alert.Icon />
+                        <Text fontSize="md" color="coolGray.800">
+                          {toastMessage}
+                        </Text>
+                      </HStack>
+                    </Center>
+                    <IconButton
+                      onPress={() => setToastVisible(false)}
+                      style={{ marginRight: 8 }}
+                      variant="unstyled"
+                      icon={<CloseIcon size="3" color="coolGray.600" />}
+                    />
+                  </HStack>
+                </VStack>
+              </Alert>
+            </Stack>
+          </Center>
+        </Slide>
       </View>
     </KeyboardAvoidingWrapper>
   )
@@ -233,5 +304,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexShrink: 0,
     flexGrow: 0
+  },
+  tostBox: {
+    position: 'absolute',
+    bottom: 30
   }
 })
